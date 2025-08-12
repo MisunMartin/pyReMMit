@@ -1,0 +1,29 @@
+title:
+  en_us: IFC Shared
+
+    Parameters
+tooltip:
+  en_us: >-
+    One click solution to add all parameters that can modify IFC Attributes of model elements:
+    
+  
+    Instance:
+
+    - IfcName
+
+    - IfcDescription
+
+    - IfcObjectType
+
+    - IfcTag
+
+
+    Type:
+
+    - IfcName[Type]
+
+    - IfcDescription[Type]
+
+    - IfcElementType[Type]
+
+    - IfcTag[Type]
