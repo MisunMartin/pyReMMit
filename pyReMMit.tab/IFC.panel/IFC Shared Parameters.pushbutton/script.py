@@ -109,6 +109,24 @@ MAJOR_CATEGORIES = [
 ]
 
 # ---------------------------------------
+# Helper: Get category for problematic built-in category like OST_StairsStringerCarriage
+# ---------------------------------------
+def get_category_for_bic(bic):
+    try:
+        cat = doc.Settings.Categories.get_Item(bic)
+        if bic == BuiltInCategory.OST_StairsStringerCarriage:
+            # Force via collector for this problematic category
+            col = FilteredElementCollector(doc)
+            f_cat = ElementCategoryFilter(bic)
+            f_type = ElementIsElementTypeFilter(False)  # Get types first
+            el = col.WherePasses(LogicalAndFilter(f_cat, f_type)).FirstElement()
+            if el and el.Category:
+                return el.Category
+        return cat
+    except:
+        return None
+
+# ---------------------------------------
 # Helper: Add shared parameters
 # ---------------------------------------
 def add_shared_parameters(shared_params_file, target_params, binding_type):
@@ -136,8 +154,8 @@ def add_shared_parameters(shared_params_file, target_params, binding_type):
 
         for built_in_cat in MAJOR_CATEGORIES:
             try:
-                category = doc.Settings.Categories.get_Item(built_in_cat)
-                if category and category.AllowsBoundParameters:
+                category = get_category_for_bic(built_in_cat)
+                if category and (built_in_cat == BuiltInCategory.OST_StairsStringerCarriage or category.AllowsBoundParameters): #Special handling for problematic Category
                     target_category_set.Insert(category)
                     target_categories.append(category.Name)
             except:
