@@ -155,16 +155,11 @@ def add_shared_parameters(shared_params_file, target_params, binding_type):
         for built_in_cat in MAJOR_CATEGORIES:
             try:
                 category = get_category_for_bic(built_in_cat)
-                if category and (built_in_cat == BuiltInCategory.OST_StairsStringerCarriage or category.AllowsBoundParameters): #Special handling for problematic Category
+                if category and (built_in_cat == BuiltInCategory.OST_StairsStringerCarriage or category.AllowsBoundParameters):
                     target_category_set.Insert(category)
                     target_categories.append(category.Name)
             except:
                 continue
-
-        print("Target categories (" + str(len(target_categories)) + "):")
-        for cat_name in target_categories:
-            print("  - " + cat_name)
-        print("\n\n")
 
         for param_name in target_params:
             param_def = None
@@ -181,29 +176,43 @@ def add_shared_parameters(shared_params_file, target_params, binding_type):
                 continue
 
             existing_binding = doc.ParameterBindings.get_Item(param_def)
+            success = False
 
+            # --- ADD OR UPDATE BINDING ---
             if existing_binding is None:
                 new_binding = (app.Create.NewTypeBinding(target_category_set) if binding_type == "type"
                                else app.Create.NewInstanceBinding(target_category_set))
                 if doc.ParameterBindings.Insert(param_def, new_binding, GroupTypeId.Ifc):
                     print("Added NEW {} parameter: {}".format(binding_type, param_name))
-                else:
-                    print("Failed to add parameter: " + param_name)
+                    success = True
             else:
                 current_categories = {c.Name for c in existing_binding.Categories}
                 target_category_names = set(target_categories)
-
                 if not target_category_names.issubset(current_categories):
-                    print("Parameter '{}' exists but missing some categories. Updating...".format(param_name))
                     new_binding = (app.Create.NewTypeBinding(target_category_set) if binding_type == "type"
                                    else app.Create.NewInstanceBinding(target_category_set))
                     doc.ParameterBindings.Remove(param_def)
                     if doc.ParameterBindings.Insert(param_def, new_binding, GroupTypeId.Ifc):
                         print("UPDATED {} parameter: {}".format(binding_type, param_name))
-                    else:
-                        print("Failed to update parameter: " + param_name)
+                        success = True
                 else:
                     print("Parameter '{}' already has all target categories".format(param_name))
+                    success = True # Still True so we can ensure the "Vary" toggle is set
+
+            # --- NEW LOGIC: SET 'VALUES CAN VARY BY GROUP INSTANCE' ---
+            if success and binding_type == "instance":
+                # We must find the InternalDefinition to access SetAllowVaryBetweenGroups
+                binding_map = doc.ParameterBindings
+                it = binding_map.ForwardIterator()
+                while it.MoveNext():
+                    # Match by name (or GUID for shared parameters)
+                    if it.Key.Name == param_name:
+                        internal_def = it.Key
+                        try:
+                            internal_def.SetAllowVaryBetweenGroups(doc, True)
+                            print("  -> Set to 'Values can vary by group instance'")
+                        except Exception as e:
+                            print("  -> Could not set 'Vary by group instance': {}".format(e))
 
         transaction.Commit()
 
