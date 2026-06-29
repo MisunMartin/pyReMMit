@@ -235,7 +235,7 @@ res = td.Show()
 
 if res == TaskDialogResult.CommandLink1:  # Instance only
     add_shared_parameters("IFC Shared Parameters-RevitIFCBuiltIn_ALL.txt",
-                          ["IfcName", "IfcDescription", "IfcTag", "IfcObjectType"], "instance")
+                          ["IfcName", "IfcDescription", "IfcTag", "IfcObjectType", "IfcSpatialContainer"], "instance")
 
 elif res == TaskDialogResult.CommandLink2:  # Type only
     add_shared_parameters("IFC Shared Parameters-RevitIFCBuiltIn-Type_ALL.txt",
@@ -243,7 +243,7 @@ elif res == TaskDialogResult.CommandLink2:  # Type only
 
 elif res == TaskDialogResult.CommandLink3:  # Both
     add_shared_parameters("IFC Shared Parameters-RevitIFCBuiltIn_ALL.txt",
-                          ["IfcName", "IfcDescription", "IfcTag", "IfcObjectType"], "instance")
+                          ["IfcName", "IfcDescription", "IfcTag", "IfcObjectType", "IfcSpatialContainer"], "instance")
     print("_" * 100)  # dividing line
     add_shared_parameters("IFC Shared Parameters-RevitIFCBuiltIn-Type_ALL.txt",
                           ["IfcDescription[Type]", "IfcName[Type]", "IfcTag[Type]", "IfcElementType[Type]"], "type")
